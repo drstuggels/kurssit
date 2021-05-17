@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import logging
 import os
 
 import requests
@@ -7,6 +8,9 @@ from bs4 import BeautifulSoup as bs
 from dotenv import load_dotenv
 
 load_dotenv()
+logging.basicConfig(filename="log.log",
+                    filemode='a',
+                    level=logging.DEBUG)
 
 wilma_url = "https://yvkoulut.inschool.fi"
 
@@ -15,7 +19,7 @@ periods = ["7065D7AB_70924", "7065D7AB_70925", "7065D7AB_70926",
            "7065D7AB_70927", "7065D7AB_70928", "7065D7AB_72689"]
 
 # Supply the names of the courses you want
-courses = ["ENA04.1"]
+courses = []
 
 
 with requests.Session() as r:
@@ -72,6 +76,7 @@ with requests.Session() as r:
             "target": id,
             "formkey": token,
         })
+        logging.info(f"id: {id}, response: {g.text}")
         print(f"Statuskoodi: {g.status_code}. Siirrytään seuraavaan.")
 
     print(f"Kaikki valmiit. {len(course_ids)} kurssia valittu.")
