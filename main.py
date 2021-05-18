@@ -5,7 +5,9 @@ import os
 
 import requests
 from bs4 import BeautifulSoup as bs
+from consolemenu import *
 from dotenv import load_dotenv
+from progress.bar import ShadyBar
 
 load_dotenv()
 logging.basicConfig(filename="log.log",
@@ -19,7 +21,8 @@ periods = ["7065D7AB_70924", "7065D7AB_70925", "7065D7AB_70926",
            "7065D7AB_70927", "7065D7AB_70928", "7065D7AB_72689"]
 
 # Supply the names of the courses you want
-courses = []
+courses = ["ENA04.1", "MAA05.1", "ÄI04.1", "RUB103.2", "FY04.1", "YH02.5", "KE03.2", "MAA06.2", "MU02.3", "KE07", "LI10.1", "FY05.1", "RUB104.2", "ENA05.2",
+           "MAA07.1", "FY09", "BI02.4", "BI04.2", "MAA17.1", "MAA08.2", "KE04.1", "BI06.2", "ÄI05.5", "ÄI06.2", "ENA06.2", "FY06.2", "MAA12.2", "RUB105.4", "BI05.2", "LI02.4"]
 
 
 with requests.Session() as r:
