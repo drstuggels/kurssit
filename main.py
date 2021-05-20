@@ -3,6 +3,10 @@
 import logging
 import os
 import time
+import tkinter as tk
+
+
+import re
 
 import requests
 from bs4 import BeautifulSoup as bs
@@ -23,26 +27,18 @@ logging.basicConfig(filename="log.log",
                     level=logging.DEBUG)
 
 
-# Supply the names of the courses you want
-courses = ["ENA04.1", "MAA05.1", "ÄI04.1", "RUB103.2", "FY04.1", "YH02.5", "KE03.2", "MAA06.2", "MU02.3", "KE07", "LI10.1", "FY05.1", "RUB104.2", "ENA05.2",
-           "MAA07.1", "FY09", "BI02.4", "BI04.2", "MAA17.1", "MAA08.2", "KE04.1", "BI06.2", "ÄI05.5", "ÄI06.2", "ENA06.2", "FY06.2", "MAA12.2", "RUB105.4", "BI05.2", "LI02.4"]
-
 # Default Wilma url
 wilma_url = "https://yvkoulut.inschool.fi"
 
 
 def magic():
-    global courses, wilma_url
+    global wilma_url
 
-    courses = [{"name": course, "id": "", "selected": False}
-               for course in courses]
-
+    clearScreen()
     custom_url = input(
         f"Käytetään wilma-osoitetta \"{wilma_url}\".\nPaina enter jos tämä kelpaa. Jos ei kelpaa, kirjoita oma: ")
     if custom_url != "":
         wilma_url = custom_url
-
-    clearScreen()
 
     clearScreen()
     print(colored("Sinun on kirjauduttava Wilmaan!", "yellow"))
@@ -109,6 +105,35 @@ def magic():
 
         periods = years[selection_menu.selected_option]["periods"]
 
+        master = tk.Tk()
+        master.resizable(False, False)
+        master.title('Haluamasi kurssit')
+        master.eval('tk::PlaceWindow . center')
+
+        def getInput():
+            globals()["courses_input"] = textarea.get("1.0", "end-1c")
+            master.after(1, master.destroy())
+
+        title = tk.Label(
+            master, text="Liitä tähän kaikki haluamasi kurssit.\nVoit erottaa ne miten tahansa (pilkut, rivivälit, jne.)")
+        title.grid(row=0, column=0)
+
+        textarea = tk.Text(master,
+                           height=30, width=38)
+        textarea.grid(row=1,
+                      column=0)
+
+        btn = tk.Button(master, text="Done.", justify="center",
+                        command=getInput)
+        btn.grid(row=2, column=0)
+        master.mainloop()
+
+        course_regex = r"([A-z0-9öÖäÄåÅ]+[\.0-9]+)"
+        courses = [course.group(0) for course in re.finditer(course_regex, globals()[
+            "courses_input"], re.MULTILINE)]
+        courses = [{"name": course, "id": "", "selected": False}
+                   for course in courses]
+
         bar = ShadyBar("Etsitään kurssit", max=(
             len(courses)*len(periods)), suffix="%(percent)d%%")
 
@@ -133,18 +158,25 @@ def magic():
             print(colored("Nämä kurssit eivät löytyneet:", "red"))
             for fail in failed:
                 print(fail["name"])
-            print(colored("\nOhjelma suljetaan.", "red"))
-            exit()
+
+            cont = input(
+                "\nJatketaanko silti?\nPaina enter jatkakseen ja jotain muuta lopetakseen: ")
+            if(cont != ""):
+                print(colored("\nOhjelma suljetaan.", "red"))
+                exit()
+
         else:
             print(
                 colored(f"Kaikki {len(courses)} kurssia löydetty!\n", "green"))
 
         start = time.time()
 
-        bar = ShadyBar("Valitaan kurssit", max=(len(courses)))
+        bar = ShadyBar("Valitaan kurssit", max=(len(courses)-len(failed)))
 
         for course in courses:
             id = course["id"]
+            if id == "":
+                continue
 
             g = r.post(f"{wilma_url}/selection/postback", data={
                 "message": "pick-group",
