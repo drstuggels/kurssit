@@ -19,5 +19,5 @@ python main.py
 - [x] ui
 - [x] chose courses with tkinter
 - [x] choose exact time
-- [ ] check select response message
+- [ ] check select response message, content length?
 - [x] remove uneccassary pips
