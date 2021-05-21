@@ -20,5 +20,4 @@ python main.py
 - [x] chose courses with tkinter
 - [x] choose exact time
 - [ ] check select response message
-- [ ] remove uneccassary pips
-- [ ] wheel
+- [x] remove uneccassary pips
