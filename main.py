@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import datetime
-import logging
 import os
 import re
 import time
 import tkinter as tk
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import pause
 import requests
@@ -21,11 +21,6 @@ def clearScreen():
     os.system('cls' if os.name == 'nt' else 'clear')
 
 
-logging.basicConfig(filename="log.log",
-                    filemode="a",
-                    level=logging.DEBUG)
-
-
 # Default Wilma url
 wilma_url = "https://yvkoulut.inschool.fi"
 
@@ -36,7 +31,7 @@ def magic():
     clearScreen()
     custom_url = input(
         f"Käytetään wilma-osoitetta \"{wilma_url}\".\nPaina Enter jos tämä kelpaa. Jos ei kelpaa, kirjoita oma: ")
-    if custom_url != "":
+    if custom_url.strip() != "":
         wilma_url = custom_url
 
     clearScreen()
@@ -152,6 +147,7 @@ def magic():
                     bar.next()
 
         failed = list(filter(lambda course: course["id"] == "", courses))
+        success = list(filter(lambda course: course["id"] != "", courses))
 
         bar.finish()
 
@@ -168,11 +164,11 @@ def magic():
 
         else:
             print(
-                colored(f"Kaikki {len(courses)} kurssia löydetty!\n", "green"))
+                colored(f"Kaikki {len(success)} kurssia löydetty!\n", "green"))
 
         thetime = input(
             "\nMihin aikaan kurssivalinnat alkavat?\nJos haluat, että kurssit valitaan heti, paina Enter.\nMuuten, kirjoita muodossa \"16.00\": ")
-        if thetime != "":
+        if thetime.strip() != "":
             (hours, minutes) = [int(t)
                                 for t in thetime.strip().replace(".", ":").split(":")]
             fire = datetime.datetime.now().replace(hour=hours, minute=minutes, second=1)
@@ -186,25 +182,27 @@ def magic():
 
         start = time.time()
 
-        bar = ShadyBar("Valitaan kurssit", max=(len(courses)-len(failed)))
+        bar = ShadyBar("Valitaan kurssit", max=(len(success)))
 
-        for course in courses:
-            id = course["id"]
-            if id == "":
-                continue
-
-            g = r.post(f"{wilma_url}/selection/postback", data={
+        with ThreadPoolExecutor(max_workers=30) as ex:
+            futures = [ex.submit(select, r, {
                 "message": "pick-group",
-                "target": id,
+                "target": course["id"],
                 "formkey": token,
-            })
-            logging.info(f"id: {id}, response: {g.text}")
-            bar.next()
+            }) for course in success]
+
+            for fut in as_completed(futures):
+                fut.result()
+                bar.next()
 
         bar.finish()
 
         print(colored("Kaikki kurssit valittu {0:0.1f} sekunnissa.".format(
             time.time() - start), "green"))
+
+
+def select(session: requests.Session, data: dict):
+    return session.post(f"{wilma_url}/selection/postback", data)
 
 
 if __name__ == "__main__":

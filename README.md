@@ -21,3 +21,4 @@ python main.py
 - [x] choose exact time
 - [ ] check select response message, content length?
 - [x] remove uneccassary pips
+- [x] threading
