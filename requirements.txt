@@ -9,6 +9,7 @@ idna==2.10
 isort==5.8.0
 lazy-object-proxy==1.6.0
 mccabe==0.6.1
+pause==0.3
 progress==1.5
 pycodestyle==2.7.0
 pylint==2.8.2

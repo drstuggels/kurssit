@@ -18,6 +18,7 @@ python main.py
 - [x] choose what school url
 - [x] ui
 - [x] chose courses with tkinter
-- [ ] choose exact time
-- [ ] tell if two courses are on the same level
+- [x] choose exact time
+- [ ] check select response message
 - [ ] remove uneccassary pips
+- [ ] wheel

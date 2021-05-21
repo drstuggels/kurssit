@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
+import datetime
 import logging
 import os
+import re
 import time
 import tkinter as tk
 
-
-import re
-
+import pause
 import requests
 from bs4 import BeautifulSoup as bs
-from consolemenu import *
-from consolemenu.items import *
+from consolemenu import SelectionMenu
 from progress.bar import ShadyBar
 from progress.spinner import PieSpinner as Spinner
 from stdiomask import getpass
@@ -36,7 +35,7 @@ def magic():
 
     clearScreen()
     custom_url = input(
-        f"Käytetään wilma-osoitetta \"{wilma_url}\".\nPaina enter jos tämä kelpaa. Jos ei kelpaa, kirjoita oma: ")
+        f"Käytetään wilma-osoitetta \"{wilma_url}\".\nPaina Enter jos tämä kelpaa. Jos ei kelpaa, kirjoita oma: ")
     if custom_url != "":
         wilma_url = custom_url
 
@@ -134,6 +133,8 @@ def magic():
         courses = [{"name": course, "id": "", "selected": False}
                    for course in courses]
 
+        print(colored(f"{len(courses)} kurssin nimeä tunnistettu", "green"))
+
         bar = ShadyBar("Etsitään kurssit", max=(
             len(courses)*len(periods)), suffix="%(percent)d%%")
 
@@ -160,14 +161,28 @@ def magic():
                 print(fail["name"])
 
             cont = input(
-                "\nJatketaanko silti?\nPaina enter jatkakseen ja jotain muuta lopetakseen: ")
-            if(cont != ""):
+                "\nJatketaanko silti?\nPaina Enter jatkakseen ja jotain muuta lopetakseen: ")
+            if cont != "":
                 print(colored("\nOhjelma suljetaan.", "red"))
                 exit()
 
         else:
             print(
                 colored(f"Kaikki {len(courses)} kurssia löydetty!\n", "green"))
+
+        thetime = input(
+            "\nMihin aikaan kurssivalinnat alkavat?\nJos haluat, että kurssit valitaan heti, paina Enter.\nMuuten, kirjoita muodossa \"16.00\": ")
+        if thetime != "":
+            (hours, minutes) = [int(t)
+                                for t in thetime.strip().replace(".", ":").split(":")]
+            fire = datetime.datetime.now().replace(hour=hours, minute=minutes, second=1)
+            print(colored(f"Nyt odotetaan {thetime} asti...\n", "green"))
+            pause.until(fire)
+        else:
+            print(colored("Aloitetaan heti!\n", "green"))
+            time.sleep(0.5)
+
+        clearScreen()
 
         start = time.time()
 
